@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MediBot - Appointment Chatbot</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">🤖 MediBot</div>
+        <div class="chat-box" id="chat-box">
+            <div class="chat-bubble bot-bubble">
+                <div class="avatar">🤖</div>
+                <div class="message">Hi! I'm MediBot. I can help you book doctor appointments or view your upcoming bookings. 😊</div>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function addMessage(message, sender = 'user') {
+            const chatBox = document.getElementById("chat-box");
+            const bubble = document.createElement("div");
+            bubble.className = `chat-bubble ${sender}-bubble`;
+
+            const avatar = document.createElement("div");
+            avatar.className = "avatar";
+            avatar.innerText = sender === 'user' ? "👤" : "🤖";
+
+            const msg = document.createElement("div");
+            msg.className = "message";
+            msg.innerText = message;
+
+            bubble.appendChild(avatar);
+            bubble.appendChild(msg);
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("user-input");
+            const userText = input.value.trim();
+            if (userText === "") return;
+
+            addMessage(userText, "user");
+            input.value = "";
+
+            const res = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userText })
+            });
+            const data = await res.json();
+            addMessage(data.response, "bot");
+        }
+
+        // Enable Enter key to send
+        document.getElementById("user-input").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
